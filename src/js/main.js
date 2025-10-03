@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const usernameInput = document.getElementById('username');
   const chartTab = document.getElementById('chart-tab');
   const downloadBtn = document.querySelector('.btn.btn-primary');
+  const sendChartBtn = document.getElementById('sendChartBtn');
 
   // Username validation regex
   const usernameRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
@@ -12,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Username input validation
     usernameInput?.addEventListener('input', () => {
       const username = usernameInput.value;
+      /**
+       * Indicates whether the provided username matches the specified regular expression pattern.
+       * @type {boolean}
+       */
       const isValid = usernameRegex.test(username);
       usernameInput.style.borderColor = isValid ? 'green' : 'red';
       usernameInput.style.borderWidth = '2px';
@@ -94,5 +99,29 @@ document.addEventListener('DOMContentLoaded', () => {
   downloadBtn?.addEventListener('click', e => {
     e.preventDefault();
     downloadCanvasImage('barChart', 'chart.png');
+  });
+
+  sendChartBtn?.addEventListener('click', async () => {
+    const email = document.getElementById('userEmail').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    const canvas = document.getElementById('barChart');
+    const imageData = canvas.toDataURL('image/png');
+    try {
+      const res = await fetch('http://localhost:3000/api/send-chart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, imageData })
+      });
+      if (res.ok) {
+        alert('Chart sent!');
+      } else {
+        alert('Failed to send chart.');
+      }
+    } catch (err) {
+      alert('Error sending chart.');
+    }
   });
 });
